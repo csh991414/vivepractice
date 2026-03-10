@@ -42,20 +42,28 @@ document.addEventListener('DOMContentLoaded', () => {
     return { stocks: ['시장 전반'], impact: 'neutral' };
   }
 
-  async function fetchNewsByCategory(query, container, count = 4) {
+  async function fetchNewsByCategory(query, container, count = 3) {
     container.innerHTML = '<div class="loading-state">데이터를 분석 중입니다...</div>';
     
     try {
       const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
-      // Using allorigins.win as a more reliable proxy
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+      
+      // Using corsproxy.io as a simpler and often more reliable proxy
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`;
       
       const response = await fetch(proxyUrl);
       if (!response.ok) throw new Error('Network response was not ok');
       
-      const data = await response.json();
+      const xmlString = await response.text();
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+      const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+      
+      // Check for parsing errors
+      const parseError = xmlDoc.getElementsByTagName("parsererror");
+      if (parseError.length > 0) {
+        throw new Error('XML parsing error');
+      }
+
       const items = Array.from(xmlDoc.querySelectorAll("item")).slice(0, count);
 
       if (items.length > 0) {
@@ -65,16 +73,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (error) {
       console.error(`Error fetching ${query}:`, error);
-      container.innerHTML = '<div class="loading-state">실시간 데이터를 연결할 수 없습니다. (잠시 후 다시 시도)</div>';
+      // Fallback UI
+      container.innerHTML = '<div class="loading-state" style="color: #e63946;">데이터 연결 오류. (프록시 서버 지연 또는 API 제한) <br> 잠시 후 다시 시도해 주세요.</div>';
     }
   }
 
   function renderNewsFromXML(items, container) {
     container.innerHTML = '';
     items.forEach(item => {
-      const title = item.querySelector("title").textContent;
-      const link = item.querySelector("link").textContent;
-      const description = item.querySelector("description").textContent;
+      const titleEl = item.querySelector("title");
+      const linkEl = item.querySelector("link");
+      const descEl = item.querySelector("description");
+
+      const title = titleEl ? titleEl.textContent : "제목 없음";
+      const link = linkEl ? linkEl.textContent : "#";
+      const description = descEl ? descEl.textContent : "";
       
       const prediction = predictImpact(title, description);
       const impactText = prediction.impact === 'positive' ? '상승 전망' : 
@@ -84,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.className = 'news-card';
       
-      // Extract cleaner description (remove HTML tags)
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = description;
       const cleanSummary = tempDiv.textContent || tempDiv.innerText || "";
@@ -114,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function refreshAllNews() {
     updateDate();
-    // Fetch 3 items for each section
     await Promise.all([
       fetchNewsByCategory('주식+반도체+AI+실적', techGrid, 3),
       fetchNewsByCategory('미국+중국+전쟁+금리+경제', globalGrid, 3)
