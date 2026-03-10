@@ -39,51 +39,55 @@ document.addEventListener('DOMContentLoaded', () => {
     return { stocks: ['시장 전반'], impact: 'neutral' };
   }
 
-  // Robust fetch with multiple proxies
-  async function fetchWithRetry(rssUrl) {
+  // Single fetch attempt from a specific proxy
+  async function fetchFromProxy(proxyGen, rssUrl) {
+    const targetUrl = proxyGen(rssUrl);
+    const response = await fetch(targetUrl);
+    if (!response.ok) throw new Error('Response not ok');
+
+    let xmlString;
+    if (targetUrl.includes('allorigins')) {
+      const data = await response.json();
+      xmlString = data.contents;
+    } else {
+      xmlString = await response.text();
+    }
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+    const items = Array.from(xmlDoc.querySelectorAll("item"));
+    
+    if (items.length === 0) throw new Error("Empty items");
+    return items;
+  }
+
+  // Parallel racing: try all proxies at once and take the fastest successful one
+  async function fetchParallel(rssUrl) {
     const proxies = [
       url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&t=${Date.now()}`,
-      url => `https://thingproxy.freeboard.io/fetch/${url}`,
-      url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+      url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+      url => `https://thingproxy.freeboard.io/fetch/${url}`
     ];
 
-    for (const proxyGen of proxies) {
-      try {
-        const targetUrl = proxyGen(rssUrl);
-        console.log(`Trying proxy: ${targetUrl}`);
-        const response = await fetch(targetUrl);
-        if (!response.ok) continue;
-
-        let xmlString;
-        if (targetUrl.includes('allorigins')) {
-          const data = await response.json();
-          xmlString = data.contents;
-        } else {
-          xmlString = await response.text();
-        }
-
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-        const items = Array.from(xmlDoc.querySelectorAll("item"));
-        
-        if (items.length > 0) return items;
-      } catch (e) {
-        console.warn("Proxy failed, trying next...", e);
-      }
+    // Race! Promise.any will return the FIRST fulfilled promise.
+    // It will only fail if ALL of them fail.
+    try {
+      return await Promise.any(proxies.map(p => fetchFromProxy(p, rssUrl)));
+    } catch (e) {
+      throw new Error("All news servers are busy");
     }
-    throw new Error("All proxies failed");
   }
 
   async function fetchNewsByCategory(query, container, count = 3) {
-    container.innerHTML = '<div class="loading-state">데이터를 분석 중입니다...</div>';
+    container.innerHTML = '<div class="loading-state">최고 속도로 분석 중...</div>';
     const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
     
     try {
-      const items = await fetchWithRetry(rssUrl);
+      const items = await fetchParallel(rssUrl);
       renderNews(items.slice(0, count), container);
     } catch (error) {
       console.error(`Error fetching ${query}:`, error);
-      container.innerHTML = '<div class="loading-state" style="color: #e63946;">뉴스 서버 응답 지연. <br> 잠시 후 다시 시도해주세요.</div>';
+      container.innerHTML = '<div class="loading-state" style="color: #e63946;">뉴스 서버 지연. <br> [데이터 갱신]을 다시 눌러주세요.</div>';
     }
   }
 
