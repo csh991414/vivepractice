@@ -34,40 +34,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function predictImpact(title, summary) {
     const combined = (title + summary).toLowerCase();
-    let bestMatch = { stocks: ['시장 전반'], impact: 'neutral' };
-    
     for (const [keyword, data] of Object.entries(stockMap)) {
       if (combined.includes(keyword.toLowerCase())) {
         return data;
       }
     }
-    return bestMatch;
+    return { stocks: ['시장 전반'], impact: 'neutral' };
   }
 
   async function fetchNewsByCategory(query, container, count = 4) {
-    container.innerHTML = '<div class="loading-state">데이터를 가져오는 중...</div>';
+    container.innerHTML = '<div class="loading-state">데이터를 분석 중입니다...</div>';
     
     try {
-      const rssUrl = encodeURIComponent(`https://news.google.com/rss/search?q=${query}&hl=ko&gl=KR&ceid=KR:ko`);
-      // Use a different proxy if rss2json fails, or try multiple times
-      const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}&api_key=oyebmxjxvqz7q4q8p3v5p6v2v2v2v2v2v2v2v2v2`); // Random API key or empty
+      const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
+      // Using allorigins.win as a more reliable proxy
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+      
+      const response = await fetch(proxyUrl);
+      if (!response.ok) throw new Error('Network response was not ok');
+      
       const data = await response.json();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+      const items = Array.from(xmlDoc.querySelectorAll("item")).slice(0, count);
 
-      if (data.status === 'ok') {
-        renderNews(data.items.slice(0, count), container);
+      if (items.length > 0) {
+        renderNewsFromXML(items, container);
       } else {
-        throw new Error('API Response not OK');
+        throw new Error('No items found');
       }
     } catch (error) {
       console.error(`Error fetching ${query}:`, error);
-      container.innerHTML = '<div class="loading-state">뉴스를 불러올 수 없습니다. (CORS 또는 API 제한)</div>';
+      container.innerHTML = '<div class="loading-state">실시간 데이터를 연결할 수 없습니다. (잠시 후 다시 시도)</div>';
     }
   }
 
-  function renderNews(items, container) {
+  function renderNewsFromXML(items, container) {
     container.innerHTML = '';
     items.forEach(item => {
-      const prediction = predictImpact(item.title, item.description);
+      const title = item.querySelector("title").textContent;
+      const link = item.querySelector("link").textContent;
+      const description = item.querySelector("description").textContent;
+      
+      const prediction = predictImpact(title, description);
       const impactText = prediction.impact === 'positive' ? '상승 전망' : 
                          prediction.impact === 'negative' ? '하락 우려' : '중립/혼조';
       const impactClass = `status-${prediction.impact}`;
@@ -75,13 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.className = 'news-card';
       
+      // Extract cleaner description (remove HTML tags)
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = item.description;
+      tempDiv.innerHTML = description;
       const cleanSummary = tempDiv.textContent || tempDiv.innerText || "";
 
       card.innerHTML = `
         <div class="news-badge badge-finance">실시간 분석</div>
-        <h3>${item.title}</h3>
+        <h3>${title}</h3>
         <p class="news-summary">${cleanSummary.substring(0, 100)}...</p>
         <div class="impact-box">
           <div class="impact-header">
@@ -95,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       card.addEventListener('click', () => {
-        window.open(item.link, '_blank');
+        window.open(link, '_blank');
       });
 
       container.appendChild(card);
@@ -104,7 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function refreshAllNews() {
     updateDate();
-    // Fetch 4 items for each section to make 8 total
     await Promise.all([
       fetchNewsByCategory('주식+반도체+AI+실적', techGrid, 4),
       fetchNewsByCategory('미국+중국+전쟁+금리+경제', globalGrid, 4)
