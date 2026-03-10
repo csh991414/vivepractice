@@ -1,1 +1,1 @@
-A simple HTML/JS/CSS starter template
+주식에 도움되는 뉴스
