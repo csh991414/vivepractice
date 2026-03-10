@@ -48,8 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
       
-      // Using corsproxy.io as a simpler and often more reliable proxy
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`;
+      // Use AllOrigins with /raw to get the text directly - usually more stable
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
       
       const response = await fetch(proxyUrl);
       if (!response.ok) throw new Error('Network response was not ok');
@@ -73,8 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (error) {
       console.error(`Error fetching ${query}:`, error);
-      // Fallback UI
-      container.innerHTML = '<div class="loading-state" style="color: #e63946;">데이터 연결 오류. (프록시 서버 지연 또는 API 제한) <br> 잠시 후 다시 시도해 주세요.</div>';
+      container.innerHTML = '<div class="loading-state" style="color: #e63946;">데이터 연결 지연. <br> 잠시 후 [새 기사 불러오기]를 눌러주세요.</div>';
     }
   }
 
@@ -127,8 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function refreshAllNews() {
     updateDate();
     await Promise.all([
-      fetchNewsByCategory('주식+반도체+AI+실적', techGrid, 3),
-      fetchNewsByCategory('미국+중국+전쟁+금리+경제', globalGrid, 3)
+      fetchNewsByCategory('주식+반도체+AI+경제', techGrid, 3),
+      fetchNewsByCategory('미국+중국+전쟁+금리', globalGrid, 3)
     ]);
   }
 

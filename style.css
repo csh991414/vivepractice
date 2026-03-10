@@ -118,28 +118,38 @@ button:hover, .submit-btn:hover {
   color: var(--text-secondary);
   font-weight: 500;
 }
-
 .news-grid {
   display: flex;
   overflow-x: auto;
   gap: 1.5rem;
-  padding: 1rem 0.5rem;
+  padding: 1rem 0.5rem 1.5rem 0.5rem; /* Bottom padding for scrollbar */
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
+/* Styled scrollbar for a better "bar" look */
 .news-grid::-webkit-scrollbar {
-  display: none;
+  display: block;
+  height: 6px;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-.news-grid {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+.news-grid::-webkit-scrollbar-track {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.news-grid::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 10px;
+}
+
+.news-grid::-webkit-scrollbar-thumb:hover {
+  background: #0036cc;
 }
 
 .news-card {
+...
+
   flex: 0 0 350px; /* Fixed width for horizontal scroll */
   background-color: var(--surface-color);
   border: 1px solid var(--border-color);
