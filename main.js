@@ -39,32 +39,51 @@ document.addEventListener('DOMContentLoaded', () => {
     return { stocks: ['시장 전반'], impact: 'neutral' };
   }
 
+  // Robust fetch with multiple proxies
+  async function fetchWithRetry(rssUrl) {
+    const proxies = [
+      url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&t=${Date.now()}`,
+      url => `https://thingproxy.freeboard.io/fetch/${url}`,
+      url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+    ];
+
+    for (const proxyGen of proxies) {
+      try {
+        const targetUrl = proxyGen(rssUrl);
+        console.log(`Trying proxy: ${targetUrl}`);
+        const response = await fetch(targetUrl);
+        if (!response.ok) continue;
+
+        let xmlString;
+        if (targetUrl.includes('allorigins')) {
+          const data = await response.json();
+          xmlString = data.contents;
+        } else {
+          xmlString = await response.text();
+        }
+
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+        const items = Array.from(xmlDoc.querySelectorAll("item"));
+        
+        if (items.length > 0) return items;
+      } catch (e) {
+        console.warn("Proxy failed, trying next...", e);
+      }
+    }
+    throw new Error("All proxies failed");
+  }
+
   async function fetchNewsByCategory(query, container, count = 3) {
     container.innerHTML = '<div class="loading-state">데이터를 분석 중입니다...</div>';
-    
-    // We'll try AllOrigins with a cache-busting timestamp to ensure fresh news
     const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}&t=${Date.now()}`;
     
     try {
-      const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error('Network response was not ok');
-      
-      const data = await response.json();
-      const xmlString = data.contents;
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-      
-      const items = Array.from(xmlDoc.querySelectorAll("item")).slice(0, count);
-
-      if (items.length > 0) {
-        renderNews(items, container);
-      } else {
-        throw new Error('No items found');
-      }
+      const items = await fetchWithRetry(rssUrl);
+      renderNews(items.slice(0, count), container);
     } catch (error) {
       console.error(`Error fetching ${query}:`, error);
-      container.innerHTML = '<div class="loading-state" style="color: #e63946;">뉴스를 불러오는데 실패했습니다. <br> 잠시 후 [데이터 갱신]을 눌러주세요.</div>';
+      container.innerHTML = '<div class="loading-state" style="color: #e63946;">뉴스 서버 응답 지연. <br> 잠시 후 다시 시도해주세요.</div>';
     }
   }
 
@@ -124,6 +143,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   refreshBtn.addEventListener('click', refreshAllNews);
 
-  // Initial Load
   refreshAllNews();
 });
