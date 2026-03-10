@@ -5,9 +5,10 @@
   --text-secondary: #666666;
   --accent-color: #0046ff;
   --border-color: #e0e0e0;
-  --positive-color: #e63946; /* KR Stock style (Red is up) */
-  --negative-color: #457b9d; /* KR Stock style (Blue is down) */
+  --positive-color: #e63946;
+  --negative-color: #457b9d;
   --neutral-color: #7f8c8d;
+  --input-bg: #ffffff;
 }
 
 body.dark-mode {
@@ -17,6 +18,7 @@ body.dark-mode {
   --text-secondary: #aaaaaa;
   --accent-color: #4d82ff;
   --border-color: #333333;
+  --input-bg: #2d2d2d;
 }
 
 * {
@@ -54,10 +56,22 @@ body {
 
 .nav-controls {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-button {
+.nav-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.nav-link:hover {
+  color: var(--accent-color);
+}
+
+button, .submit-btn {
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
   border: 1px solid var(--border-color);
@@ -68,7 +82,7 @@ button {
   transition: all 0.2s;
 }
 
-button:hover {
+button:hover, .submit-btn:hover {
   background-color: var(--accent-color);
   color: white;
   border-color: var(--accent-color);
@@ -81,7 +95,7 @@ button:hover {
 }
 
 .dashboard-header {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   text-align: center;
 }
 
@@ -184,8 +198,65 @@ button:hover {
   font-weight: 600;
 }
 
+/* Form Styles */
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: var(--surface-color);
+  padding: 2.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.partnership-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.form-group input, .form-group textarea {
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.submit-btn {
+  margin-top: 1rem;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 1rem;
+  font-size: 1.1rem;
+}
+
 @media (max-width: 600px) {
   .news-grid {
     grid-template-columns: 1fr;
+  }
+  .form-container {
+    padding: 1.5rem;
   }
 }

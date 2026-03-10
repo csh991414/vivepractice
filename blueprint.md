@@ -1,25 +1,22 @@
-# Stock Impact News Dashboard
+# Stock Impact News Dashboard & Partnership System
 
 ## Overview
-A financial dashboard that simulates daily morning news scraping, organizes headlines, and predicts potential impacts on specific Korean stocks based on keywords and industry analysis.
+A financial dashboard that simulates daily morning news scraping and a dedicated partnership request system.
 
 ## Current State
-- `index.html`, `style.css`, `main.js`: Currently contains the Lotto Generator.
+- `index.html`: Stock Impact News Dashboard.
+- `style.css`: Financial dashboard styles.
+- `main.js`: News rendering and theme logic.
 
 ## Proposed Plan
-1.  **Clean Up:** Remove existing lotto-related code and styles.
-2.  **UI Implementation (`index.html`):**
-    -   Create a "Morning News Briefing" section.
-    -   Implement a card-based layout for headlines.
-    -   Add a "Analyze Impact" or "Refresh Headlines" button.
-    -   Include a theme toggle.
+1.  **New Page Implementation (`partnership.html`):**
+    -   Create a clean, professional form for partnership inquiries.
+    -   Integrate Formspree (`https://formspree.io/f/mjgaybdr`) for form handling.
+    -   Fields: Name, Email, Company, Message.
+2.  **Navigation Update (`index.html` & `partnership.html`):**
+    -   Add a "제휴 문의" (Partnership Inquiry) link to the navbar.
 3.  **Styling (`style.css`):**
-    -   Professional financial dashboard aesthetic (clean typography, subtle borders, status indicators).
-    -   Responsive grid for news cards.
-    -   Dynamic styling for "Positive/Negative/Neutral" impact indicators.
-4.  **Functionality (`main.js`):**
-    -   **Mock Data Engine:** A collection of realistic financial headlines and news categories.
-    -   **Prediction Logic:** A function that parses headlines for keywords (e.g., "반도체", "이차전지", "금리") and maps them to relevant Korean stocks (e.g., "삼성전자", "LG에너지솔루션", "카카오").
-    -   **DOM Rendering:** Dynamically generate news cards with headline, summary, and "Affected Stocks" tags.
-5.  **Git Integration:**
-    -   Add, commit, and push the new dashboard to GitHub.
+    -   Add styles for the form container, inputs, and submission button.
+    -   Ensure consistent theme support (Light/Dark).
+4.  **Git Integration:**
+    -   Add, commit, and push the new page and updates to GitHub.
