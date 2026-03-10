@@ -1,27 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lotto Generator</title>
+  <title>Stock Impact Analyzer - Daily News</title>
   <link href='/style.css' rel='stylesheet'>
 </head>
 <body class="light-mode">
-  <div class="container">
-    <h1>Lotto Generator</h1>
-    <div id="lotto-container" class="lotto-balls">
-      <div class="ball">?</div>
-      <div class="ball">?</div>
-      <div class="ball">?</div>
-      <div class="ball">?</div>
-      <div class="ball">?</div>
-      <div class="ball">?</div>
+  <nav class="navbar">
+    <div class="logo">StockInsight KR</div>
+    <div class="nav-controls">
+      <button id="refresh-news">새 기사 불러오기</button>
+      <button id="theme-toggle">테마 변경</button>
     </div>
-    <div class="controls">
-      <button id="generate-btn">Generate Lotto Numbers</button>
-      <button id="theme-toggle">Switch Theme</button>
+  </nav>
+
+  <main class="container">
+    <header class="dashboard-header">
+      <h1>오늘의 아침 주요 뉴스 & 종목 영향 예측</h1>
+      <p id="current-date"></p>
+    </header>
+
+    <div id="news-grid" class="news-grid">
+      <!-- News cards will be injected here via JS -->
+      <div class="loading-state">뉴스를 불러오는 중...</div>
     </div>
-  </div>
+  </main>
+
   <script defer type="text/javascript" src="/main.js"></script>
 </body>
 </html>

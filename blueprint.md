@@ -1,25 +1,25 @@
-# Lotto Generator with Dark/Light Mode
+# Stock Impact News Dashboard
 
 ## Overview
-A simple web application that generates random lotto numbers (1-45) and features a theme switcher between dark and light modes.
+A financial dashboard that simulates daily morning news scraping, organizes headlines, and predicts potential impacts on specific Korean stocks based on keywords and industry analysis.
 
 ## Current State
-- `index.html`: Basic "Hello World" structure.
-- `style.css`: Empty.
-- `main.js`: Basic console log function.
+- `index.html`, `style.css`, `main.js`: Currently contains the Lotto Generator.
 
 ## Proposed Plan
-1.  **UI Implementation (`index.html`):**
-    -   Add a container for lotto numbers.
-    -   Add a "Generate Lotto Numbers" button.
-    -   Add a "Toggle Theme" button.
-2.  **Styling (`style.css`):**
-    -   Implement CSS Variables for colors (background, text, lotto balls).
-    -   Define styles for the lotto generator UI.
-    -   Implement theme classes (`.light-mode`, `.dark-mode`).
-3.  **Functionality (`main.js`):**
-    -   Implement `generateLotto()` to produce 6 unique random numbers between 1 and 45.
-    -   Implement `toggleTheme()` to switch between light and dark modes.
-    -   Update the DOM to reflect changes.
-4.  **Git Integration:**
-    -   Add changes, commit, and push to the remote repository.
+1.  **Clean Up:** Remove existing lotto-related code and styles.
+2.  **UI Implementation (`index.html`):**
+    -   Create a "Morning News Briefing" section.
+    -   Implement a card-based layout for headlines.
+    -   Add a "Analyze Impact" or "Refresh Headlines" button.
+    -   Include a theme toggle.
+3.  **Styling (`style.css`):**
+    -   Professional financial dashboard aesthetic (clean typography, subtle borders, status indicators).
+    -   Responsive grid for news cards.
+    -   Dynamic styling for "Positive/Negative/Neutral" impact indicators.
+4.  **Functionality (`main.js`):**
+    -   **Mock Data Engine:** A collection of realistic financial headlines and news categories.
+    -   **Prediction Logic:** A function that parses headlines for keywords (e.g., "반도체", "이차전지", "금리") and maps them to relevant Korean stocks (e.g., "삼성전자", "LG에너지솔루션", "카카오").
+    -   **DOM Rendering:** Dynamically generate news cards with headline, summary, and "Affected Stocks" tags.
+5.  **Git Integration:**
+    -   Add, commit, and push the new dashboard to GitHub.
