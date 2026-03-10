@@ -22,10 +22,19 @@
       <p id="current-date"></p>
     </header>
 
-    <div id="news-grid" class="news-grid">
-      <!-- News cards will be injected here via JS -->
-      <div class="loading-state">뉴스를 불러오는 중...</div>
-    </div>
+    <section class="news-section">
+      <h2 class="section-title">🚀 시장 주도 섹터 (반도체/AI/테크)</h2>
+      <div id="tech-news-grid" class="news-grid">
+        <div class="loading-state">테크 뉴스를 불러오는 중...</div>
+      </div>
+    </section>
+
+    <section class="news-section" style="margin-top: 3rem;">
+      <h2 class="section-title">🌍 국제 정세 & 거시 경제 (미국/중국/전쟁)</h2>
+      <div id="global-news-grid" class="news-grid">
+        <div class="loading-state">국제 뉴스를 불러오는 중...</div>
+      </div>
+    </section>
 
     <section class="comments-section">
       <div id="disqus_thread"></div>
