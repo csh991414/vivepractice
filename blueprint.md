@@ -1,31 +1,28 @@
-# Stock Impact News Dashboard & Partnership System
+# Flowerly News - Stock Impact News Dashboard
 
 ## Overview
-A financial dashboard that simulates daily morning news scraping and a dedicated partnership request system.
+A financial dashboard that simulates daily morning news scraping and a dedicated partnership request system. Rebranded from StockInsight KR to Flowerly News.
 
 ## Current State
-- `index.html`: Stock Impact News Dashboard.
-- `partnership.html`: Partnership inquiry form.
-- `privacy.html` & `terms.html`: Policy pages.
+- `index.html`: Main dashboard for Flowerly News.
+- `partnership.html`: Rebranded partnership inquiry form.
+- `privacy.html` & `terms.html`: Rebranded policy pages.
 - `style.css`: Unified financial theme.
-- `main.js`: News rendering and theme logic.
+- `main.js`: 9 AM News Rotation System (30 items batch, 3 items cycle).
+- **Favicon:** `favicon.jpg` used as the site icon.
 - **Analytics:** 
   - Google Tag Manager (G-36QESVDLHY)
   - Microsoft Clarity (vtfjpdug32)
-  - Integrated across all pages.
 
 ## Features
-- AI-based market analysis simulation.
-- Real-time date and news grid.
-- Dark/Light mode support.
-- Partnership form with Formspree integration.
-- SEO optimized meta tags and descriptions.
-- Google Analytics 4 integration.
-- Heatmap and session recording via Microsoft Clarity.
+- **9 AM Batch Loading:** Fetches 30 news items per category every morning at 9 AM.
+- **News Rotation:** Displays 3 items at a time, cycling through the 30-item batch upon refresh.
+- **AI-Based Impact Prediction:** Analyzes news content to predict stock market impacts.
+- **Rebranded UI:** Expressive typography and "Flowerly News" branding.
+- **Dark/Light Mode:** Full theme support.
+- **Partnership System:** Integrated with Formspree for inquiries.
 
-## Proposed Plan (Completed)
-1.  **Analytics Integration:**
-    -   Add Google Tag Manager script to all HTML files.
-    -   Add Microsoft Clarity script to all HTML files for user behavior analysis.
-2.  **Deployment:**
-    -   Push changes to GitHub for potential automated deployment.
+## Technical Details
+- **News Fetching:** Uses Google News RSS via AllOrigins proxy with a robust JSON parsing method.
+- **State Management:** Local cache for news items and rotation indices.
+- **Deployment:** GitHub Pages / Firebase Hosting.

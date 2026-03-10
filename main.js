@@ -48,14 +48,49 @@ document.addEventListener('DOMContentLoaded', () => {
     return { stocks: ['시장 전반'], impact: 'neutral' };
   }
 
+  async function fetchRSSItems(query, count) {
+    const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
+    // Use AllOrigins JSON endpoint which is more robust
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+    
+    try {
+      const response = await fetch(proxyUrl);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      if (!data || !data.contents) throw new Error('No contents in proxy response');
+      
+      const xmlString = data.contents;
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+      
+      if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+        throw new Error("XML Parsing Error");
+      }
+      
+      const items = Array.from(xmlDoc.querySelectorAll("item"));
+      console.log(`Successfully fetched ${items.length} items for query: ${query}`);
+      return items.slice(0, count);
+    } catch (e) {
+      console.error(`Fetch error for ${query}:`, e);
+      throw e;
+    }
+  }
+
   async function fetchAllNews() {
     console.log("Fetching fresh 30 items for the day...");
+    techGrid.innerHTML = globalGrid.innerHTML = '<div class="loading-state">오늘의 새로운 뉴스를 분석 중입니다...</div>';
+    
     try {
       const [techItems, globalItems] = await Promise.all([
         fetchRSSItems('주식+반도체+AI+경제', 30),
         fetchRSSItems('미국+중국+전쟁+금리', 30)
       ]);
       
+      if (techItems.length === 0 && globalItems.length === 0) {
+        throw new Error("No news items found in both categories");
+      }
+
       newsCache.tech = techItems;
       newsCache.global = globalItems;
       newsCache.lastFetched = new Date().toDateString();
@@ -65,21 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
       displayNextBatch();
     } catch (error) {
       console.error("Initial fetch failed:", error);
-      techGrid.innerHTML = globalGrid.innerHTML = '<div class="loading-state" style="color: #e63946;">뉴스를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.</div>';
+      techGrid.innerHTML = globalGrid.innerHTML = '<div class="loading-state" style="color: #e63946;">뉴스를 불러오는데 실패했습니다. <br> 네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.</div>';
     }
-  }
-
-  async function fetchRSSItems(query, count) {
-    const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-    
-    const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error('Network response was not ok');
-    
-    const xmlString = await response.text();
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-    return Array.from(xmlDoc.querySelectorAll("item")).slice(0, count);
   }
 
   function displayNextBatch() {
@@ -93,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let start = newsCache[indexKey];
     const batchSize = 3;
     
-    // If we reached the end, loop back
     if (start >= items.length) {
       start = 0;
       newsCache[indexKey] = 0;
@@ -144,14 +165,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     const today = now.toDateString();
     
-    // If it's 9 AM and we haven't fetched today, or if we have no cache
     if (newsCache.lastFetched !== today) {
-      // Logic for 9 AM: only fetch if current time >= 9 AM
       if (now.getHours() >= 9 || !newsCache.lastFetched) {
         fetchAllNews();
       } else {
-        // If before 9 AM, use yesterday's or whatever we have, or fetch if empty
         if (newsCache.tech.length === 0) fetchAllNews();
+        else displayNextBatch();
       }
     } else {
       displayNextBatch();
@@ -167,6 +186,5 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAndRefresh();
   });
 
-  // Initial Load
   checkAndRefresh();
 });
