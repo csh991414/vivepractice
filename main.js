@@ -5,14 +5,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.getElementById('theme-toggle');
   const dateDisplay = document.getElementById('current-date');
 
+  // State management
+  let newsCache = {
+    tech: [],
+    global: [],
+    lastFetched: null,
+    techIndex: 0,
+    globalIndex: 0
+  };
+
   function updateDate() {
     const now = new Date();
-    dateDisplay.textContent = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 실시간 시장 & 국제 정세 브리핑`;
+    dateDisplay.textContent = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 Flowerly News 실시간 브리핑`;
   }
   updateDate();
 
   const stockMap = {
-    // 테크 & 산업
     '반도체': { stocks: ['삼성전자', 'SK하이닉스', '한미반도체'], impact: 'positive' },
     'AI': { stocks: ['NAVER', '카카오', '이수페타시스'], impact: 'positive' },
     '전기차': { stocks: ['LG엔솔', '에코프로', '현대차'], impact: 'neutral' },
@@ -20,8 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     '바이오': { stocks: ['삼성바이오', '셀트리온'], impact: 'positive' },
     '애플': { stocks: ['LG이노텍', '비에이치'], impact: 'positive' },
     '엔비디아': { stocks: ['SK하이닉스', '한미반도체'], impact: 'positive' },
-    
-    // 국제 정세 & 거시 경제
     '금리': { stocks: ['KB금융', '신한지주', '보험주'], impact: 'neutral' },
     '환율': { stocks: ['현대차', '기아', '삼성전자'], impact: 'neutral' },
     '전쟁': { stocks: ['LIG넥스원', '현대로템', '한화에어로'], impact: 'positive' },
@@ -33,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function predictImpact(title, summary) {
-    const combined = (title + summary).toLowerCase();
+    const combined = (title + (summary || "")).toLowerCase();
     for (const [keyword, data] of Object.entries(stockMap)) {
       if (combined.includes(keyword.toLowerCase())) {
         return data;
@@ -42,51 +48,65 @@ document.addEventListener('DOMContentLoaded', () => {
     return { stocks: ['시장 전반'], impact: 'neutral' };
   }
 
-  async function fetchNewsByCategory(query, container, count = 3) {
-    container.innerHTML = '<div class="loading-state">데이터를 분석 중입니다...</div>';
-    
+  async function fetchAllNews() {
+    console.log("Fetching fresh 30 items for the day...");
     try {
-      const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
+      const [techItems, globalItems] = await Promise.all([
+        fetchRSSItems('주식+반도체+AI+경제', 30),
+        fetchRSSItems('미국+중국+전쟁+금리', 30)
+      ]);
       
-      // Use AllOrigins with /raw to get the text directly - usually more stable
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+      newsCache.tech = techItems;
+      newsCache.global = globalItems;
+      newsCache.lastFetched = new Date().toDateString();
+      newsCache.techIndex = 0;
+      newsCache.globalIndex = 0;
       
-      const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error('Network response was not ok');
-      
-      const xmlString = await response.text();
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-      
-      // Check for parsing errors
-      const parseError = xmlDoc.getElementsByTagName("parsererror");
-      if (parseError.length > 0) {
-        throw new Error('XML parsing error');
-      }
-
-      const items = Array.from(xmlDoc.querySelectorAll("item")).slice(0, count);
-
-      if (items.length > 0) {
-        renderNewsFromXML(items, container);
-      } else {
-        throw new Error('No items found');
-      }
+      displayNextBatch();
     } catch (error) {
-      console.error(`Error fetching ${query}:`, error);
-      container.innerHTML = '<div class="loading-state" style="color: #e63946;">데이터 연결 지연. <br> 잠시 후 [새 기사 불러오기]를 눌러주세요.</div>';
+      console.error("Initial fetch failed:", error);
+      techGrid.innerHTML = globalGrid.innerHTML = '<div class="loading-state" style="color: #e63946;">뉴스를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.</div>';
     }
   }
 
-  function renderNewsFromXML(items, container) {
-    container.innerHTML = '';
-    items.forEach(item => {
-      const titleEl = item.querySelector("title");
-      const linkEl = item.querySelector("link");
-      const descEl = item.querySelector("description");
+  async function fetchRSSItems(query, count) {
+    const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+    
+    const response = await fetch(proxyUrl);
+    if (!response.ok) throw new Error('Network response was not ok');
+    
+    const xmlString = await response.text();
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+    return Array.from(xmlDoc.querySelectorAll("item")).slice(0, count);
+  }
 
-      const title = titleEl ? titleEl.textContent : "제목 없음";
-      const link = linkEl ? linkEl.textContent : "#";
-      const description = descEl ? descEl.textContent : "";
+  function displayNextBatch() {
+    renderBatch(newsCache.tech, techGrid, 'techIndex');
+    renderBatch(newsCache.global, globalGrid, 'globalIndex');
+  }
+
+  function renderBatch(items, container, indexKey) {
+    if (!items || items.length === 0) return;
+    
+    let start = newsCache[indexKey];
+    const batchSize = 3;
+    
+    // If we reached the end, loop back
+    if (start >= items.length) {
+      start = 0;
+      newsCache[indexKey] = 0;
+    }
+    
+    const batch = items.slice(start, start + batchSize);
+    newsCache[indexKey] += batchSize;
+    
+    container.innerHTML = '';
+    batch.forEach(item => {
+      const title = item.querySelector("title")?.textContent || "제목 없음";
+      const link = item.querySelector("link")?.textContent || "#";
+      const description = item.querySelector("description")?.textContent || "";
       
       const prediction = predictImpact(title, description);
       const impactText = prediction.impact === 'positive' ? '상승 전망' : 
@@ -101,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cleanSummary = tempDiv.textContent || tempDiv.innerText || "";
 
       card.innerHTML = `
-        <div class="news-badge badge-finance">실시간 분석</div>
+        <div class="news-badge badge-finance">AI 분석</div>
         <h3>${title}</h3>
         <p class="news-summary">${cleanSummary.substring(0, 100)}...</p>
         <div class="impact-box">
@@ -115,28 +135,38 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
-      card.addEventListener('click', () => {
-        window.open(link, '_blank');
-      });
-
+      card.addEventListener('click', () => window.open(link, '_blank'));
       container.appendChild(card);
     });
   }
 
-  async function refreshAllNews() {
-    updateDate();
-    await Promise.all([
-      fetchNewsByCategory('주식+반도체+AI+경제', techGrid, 3),
-      fetchNewsByCategory('미국+중국+전쟁+금리', globalGrid, 3)
-    ]);
+  function checkAndRefresh() {
+    const now = new Date();
+    const today = now.toDateString();
+    
+    // If it's 9 AM and we haven't fetched today, or if we have no cache
+    if (newsCache.lastFetched !== today) {
+      // Logic for 9 AM: only fetch if current time >= 9 AM
+      if (now.getHours() >= 9 || !newsCache.lastFetched) {
+        fetchAllNews();
+      } else {
+        // If before 9 AM, use yesterday's or whatever we have, or fetch if empty
+        if (newsCache.tech.length === 0) fetchAllNews();
+      }
+    } else {
+      displayNextBatch();
+    }
   }
 
   themeToggle.addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
   });
 
-  refreshBtn.addEventListener('click', refreshAllNews);
+  refreshBtn.addEventListener('click', () => {
+    updateDate();
+    checkAndRefresh();
+  });
 
   // Initial Load
-  refreshAllNews();
+  checkAndRefresh();
 });
