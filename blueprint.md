@@ -5,18 +5,22 @@ A financial dashboard that simulates daily morning news scraping and a dedicated
 
 ## Current State
 - `index.html`: Stock Impact News Dashboard.
-- `style.css`: Financial dashboard styles.
+- `partnership.html`: Partnership inquiry form.
+- `privacy.html` & `terms.html`: Policy pages.
+- `style.css`: Unified financial theme.
 - `main.js`: News rendering and theme logic.
+- **Analytics:** Google Tag Manager (G-36QESVDLHY) integrated across all pages.
 
-## Proposed Plan
-1.  **New Page Implementation (`partnership.html`):**
-    -   Create a clean, professional form for partnership inquiries.
-    -   Integrate Formspree (`https://formspree.io/f/mjgaybdr`) for form handling.
-    -   Fields: Name, Email, Company, Message.
-2.  **Navigation Update (`index.html` & `partnership.html`):**
-    -   Add a "제휴 문의" (Partnership Inquiry) link to the navbar.
-3.  **Styling (`style.css`):**
-    -   Add styles for the form container, inputs, and submission button.
-    -   Ensure consistent theme support (Light/Dark).
-4.  **Git Integration:**
-    -   Add, commit, and push the new page and updates to GitHub.
+## Features
+- AI-based market analysis simulation.
+- Real-time date and news grid.
+- Dark/Light mode support.
+- Partnership form with Formspree integration.
+- SEO optimized meta tags and descriptions.
+- Google Analytics 4 integration.
+
+## Proposed Plan (Completed)
+1.  **Analytics Integration:**
+    -   Add Google Tag Manager script to all HTML files for tracking.
+2.  **Deployment:**
+    -   Deploy the project to Firebase Hosting or relevant platform.
