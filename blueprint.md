@@ -9,7 +9,10 @@ A financial dashboard that simulates daily morning news scraping and a dedicated
 - `privacy.html` & `terms.html`: Policy pages.
 - `style.css`: Unified financial theme.
 - `main.js`: News rendering and theme logic.
-- **Analytics:** Google Tag Manager (G-36QESVDLHY) integrated across all pages.
+- **Analytics:** 
+  - Google Tag Manager (G-36QESVDLHY)
+  - Microsoft Clarity (vtfjpdug32)
+  - Integrated across all pages.
 
 ## Features
 - AI-based market analysis simulation.
@@ -18,9 +21,11 @@ A financial dashboard that simulates daily morning news scraping and a dedicated
 - Partnership form with Formspree integration.
 - SEO optimized meta tags and descriptions.
 - Google Analytics 4 integration.
+- Heatmap and session recording via Microsoft Clarity.
 
 ## Proposed Plan (Completed)
 1.  **Analytics Integration:**
-    -   Add Google Tag Manager script to all HTML files for tracking.
+    -   Add Google Tag Manager script to all HTML files.
+    -   Add Microsoft Clarity script to all HTML files for user behavior analysis.
 2.  **Deployment:**
-    -   Deploy the project to Firebase Hosting or relevant platform.
+    -   Push changes to GitHub for potential automated deployment.
