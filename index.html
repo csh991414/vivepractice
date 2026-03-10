@@ -30,15 +30,10 @@
     <section class="comments-section">
       <div id="disqus_thread"></div>
       <script>
-          /**
-          *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-          *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
-          /*
           var disqus_config = function () {
-          this.page.url = window.location.href;  // Replace PAGE_URL with your page's canonical URL variable
-          this.page.identifier = 'stockinsight-main'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+            this.page.url = window.location.href.split('#')[0];  // 현재 페이지 URL (해시 제외)
+            this.page.identifier = 'stockinsight-kr-v1'; // 유니크한 식별자 설정
           };
-          */
           (function() { // DON'T EDIT BELOW THIS LINE
           var d = document, s = d.createElement('script');
           s.src = 'https://vive-2.disqus.com/embed.js';
