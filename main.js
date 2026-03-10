@@ -114,9 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function refreshAllNews() {
     updateDate();
+    // Fetch 3 items for each section
     await Promise.all([
-      fetchNewsByCategory('주식+반도체+AI+실적', techGrid, 4),
-      fetchNewsByCategory('미국+중국+전쟁+금리+경제', globalGrid, 4)
+      fetchNewsByCategory('주식+반도체+AI+실적', techGrid, 3),
+      fetchNewsByCategory('미국+중국+전쟁+금리+경제', globalGrid, 3)
     ]);
   }
 

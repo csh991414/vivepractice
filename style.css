@@ -120,12 +120,27 @@ button:hover, .submit-btn:hover {
 }
 
 .news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  display: flex;
+  overflow-x: auto;
   gap: 1.5rem;
+  padding: 1rem 0.5rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.news-grid::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.news-grid {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 .news-card {
+  flex: 0 0 350px; /* Fixed width for horizontal scroll */
   background-color: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -134,6 +149,7 @@ button:hover, .submit-btn:hover {
   flex-direction: column;
   box-shadow: 0 4px 6px rgba(0,0,0,0.02);
   transition: transform 0.2s, box-shadow 0.2s;
+  scroll-snap-align: start;
 }
 
 .news-card:hover {
